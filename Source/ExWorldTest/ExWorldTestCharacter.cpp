@@ -44,8 +44,48 @@ AExWorldTestCharacter::AExWorldTestCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
+	AbilitySystemComponent = CreateDefaultSubobject<UExAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent->SetIsReplicated(true);
+
+}
+
+void AExWorldTestCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	// Initialize our abilities
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->InitAbilityActorInfo(this, this);
+		AbilitySystemComponent->GrantInitialAbilities();
+	}
+}
+
+void AExWorldTestCharacter::UnPossessed()
+{
+
+}
+
+void AExWorldTestCharacter::OnRep_Controller()
+{
+	Super::OnRep_Controller();
+
+	// Our controller changed, must update ActorInfo on AbilitySystemComponent
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->RefreshAbilityActorInfo();
+	}
+}
+
+void AExWorldTestCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+}
+
+UAbilitySystemComponent* AExWorldTestCharacter::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -73,8 +113,11 @@ void AExWorldTestCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 	PlayerInputComponent->BindTouch(IE_Pressed, this, &AExWorldTestCharacter::TouchStarted);
 	PlayerInputComponent->BindTouch(IE_Released, this, &AExWorldTestCharacter::TouchStopped);
 
-	// VR headset functionality
-	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AExWorldTestCharacter::OnResetVR);
+	if (IsValid(AbilitySystemComponent))
+	{
+		AbilitySystemComponent->BindAbilityActivationToInputComponent(PlayerInputComponent, FGameplayAbilityInputBinds(FString(TEXT("ConfirmTarget")), FString("CancelTarget"), FString("EAbilityInputID")));
+	}
+
 }
 
 
@@ -138,4 +181,11 @@ void AExWorldTestCharacter::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
 	}
+}
+
+FGenericTeamId AExWorldTestCharacter::GetGenericTeamId() const
+{
+	static const FGenericTeamId PlayerTeam(0);
+	static const FGenericTeamId AITeam(1);
+	return Cast<APlayerController>(GetController()) ? PlayerTeam : AITeam;
 }

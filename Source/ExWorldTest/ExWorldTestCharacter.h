@@ -4,10 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "AbilitySystemInterface.h"
+#include "GenericTeamAgentInterface.h"
+#include "Abilities/ExAbilitySystemComponent.h"
 #include "ExWorldTestCharacter.generated.h"
 
+
+
 UCLASS(config=Game)
-class AExWorldTestCharacter : public ACharacter
+class AExWorldTestCharacter : public ACharacter, public IAbilitySystemInterface, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -20,6 +25,14 @@ class AExWorldTestCharacter : public ACharacter
 	class UCameraComponent* FollowCamera;
 public:
 	AExWorldTestCharacter();
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void UnPossessed() override;
+	virtual void OnRep_Controller() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+
+	// Implement IAbilitySystemInterface
+	UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
@@ -63,10 +76,19 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	// End of APawn interface
 
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Component, meta = (AllowPrivateAccess = "true"))
+	UExAbilitySystemComponent* AbilitySystemComponent;
+
+	/** Required to support AIPerceptionSystem */
+	virtual FGenericTeamId GetGenericTeamId() const override;
+
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+
 };
 
