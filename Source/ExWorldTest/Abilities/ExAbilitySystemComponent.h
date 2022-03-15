@@ -8,6 +8,9 @@
 #include "ExAbilitySystemComponent.generated.h"
 
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FReceivedDamageDelegate, UExAbilitySystemComponent*, SourceASC, float, UnmitigatedDamage, float, MitigatedDamage);
+
+
 /**
  * Subclass of ability system component with game-specific data
  * Most games will need to make a game-specific subclass to provide utility functions
@@ -19,31 +22,13 @@ class EXWORLDTEST_API UExAbilitySystemComponent : public UAbilitySystemComponent
 	GENERATED_BODY()
 
 public:
-	// Constructors and overrides
-	UExAbilitySystemComponent();
+	bool CharacterAbilitiesGiven = false;
+	bool StartupEffectsApplied = false;
 
-	/** Returns a list of currently active ability instances that match the tags */
-	void GetActiveAbilitiesWithTags(const FGameplayTagContainer& GameplayTagContainer, TArray<UExGameplayAbility*>& ActiveAbilities);
+	FReceivedDamageDelegate ReceivedDamage;
 
-	/** Returns the default level used for ability activations, derived from the character */
-	int32 GetDefaultAbilityLevel() const;
-
-	/** Version of function in AbilitySystemGlobals that returns correct type */
-	static UExAbilitySystemComponent* GetAbilitySystemComponentFromActor(const AActor* Actor, bool LookForComponent = false);
-
-
-	void GrantInitialAbilities();
-
-
-public:
-
-	// Initial abilities for this Character
-	UPROPERTY(EditAnywhere, Category = "Abilities")
-	TArray<FAbilityBindInfo> InitialAbilities;
-
-
-protected:
-	bool bCharacterAbilitiesGiven = false;
+	// Called from GDDamageExecCalculation. Broadcasts on ReceivedDamage whenever this ASC receives damage.
+	virtual void ReceiveDamage(UExAbilitySystemComponent* SourceASC, float UnmitigatedDamage, float MitigatedDamage);
 
 
 };

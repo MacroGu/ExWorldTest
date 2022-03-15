@@ -53,12 +53,25 @@ void AExWorldTestCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	// Initialize our abilities
-	if (AbilitySystemComponent)
+	AddCharacterAbilities();
+
+}
+
+void AExWorldTestCharacter::AddCharacterAbilities()
+{
+	// Grant abilities, but only on the server	
+	if (GetLocalRole() != ROLE_Authority || !IsValid(AbilitySystemComponent) || AbilitySystemComponent->CharacterAbilitiesGiven)
 	{
-		AbilitySystemComponent->InitAbilityActorInfo(this, this);
-		AbilitySystemComponent->GrantInitialAbilities();
+		return;
 	}
+
+	for (TSubclassOf<UExGameplayAbility>& StartupAbility : CharacterAbilities)
+	{
+		AbilitySystemComponent->GiveAbility(
+			FGameplayAbilitySpec(StartupAbility, 1, static_cast<int32>(StartupAbility.GetDefaultObject()->AbilityInputID), this));
+	}
+
+	AbilitySystemComponent->CharacterAbilitiesGiven = true;
 }
 
 void AExWorldTestCharacter::UnPossessed()
@@ -120,18 +133,6 @@ void AExWorldTestCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 
 }
 
-
-void AExWorldTestCharacter::OnResetVR()
-{
-	// If ExWorldTest is added to a project via 'Add Feature' in the Unreal Editor the dependency on HeadMountedDisplay in ExWorldTest.Build.cs is not automatically propagated
-	// and a linker error will result.
-	// You will need to either:
-	//		Add "HeadMountedDisplay" to [YourProject].Build.cs PublicDependencyModuleNames in order to build successfully (appropriate if supporting VR).
-	// or:
-	//		Comment or delete the call to ResetOrientationAndPosition below (appropriate if not supporting VR)
-	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
-}
-
 void AExWorldTestCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
 {
 		Jump();
@@ -181,11 +182,4 @@ void AExWorldTestCharacter::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
 	}
-}
-
-FGenericTeamId AExWorldTestCharacter::GetGenericTeamId() const
-{
-	static const FGenericTeamId PlayerTeam(0);
-	static const FGenericTeamId AITeam(1);
-	return Cast<APlayerController>(GetController()) ? PlayerTeam : AITeam;
 }

@@ -5,14 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
-#include "GenericTeamAgentInterface.h"
 #include "Abilities/ExAbilitySystemComponent.h"
 #include "ExWorldTestCharacter.generated.h"
 
 
 
 UCLASS(config=Game)
-class AExWorldTestCharacter : public ACharacter, public IAbilitySystemInterface, public IGenericTeamAgentInterface
+class AExWorldTestCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -44,9 +43,6 @@ public:
 
 protected:
 
-	/** Resets HMD orientation in VR. */
-	void OnResetVR();
-
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);
 
@@ -77,11 +73,15 @@ protected:
 	// End of APawn interface
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Component, meta = (AllowPrivateAccess = "true"))
+
+	// Default abilities for this Character. These will be removed on Character death and regiven if Character respawns.
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "ExWorld|Abilities")
+	TArray<TSubclassOf<class UExGameplayAbility>> CharacterAbilities;
+
 	UExAbilitySystemComponent* AbilitySystemComponent;
 
-	/** Required to support AIPerceptionSystem */
-	virtual FGenericTeamId GetGenericTeamId() const override;
+	virtual void AddCharacterAbilities();
+
 
 public:
 	/** Returns CameraBoom subobject **/

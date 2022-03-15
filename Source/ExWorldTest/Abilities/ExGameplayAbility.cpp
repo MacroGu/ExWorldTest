@@ -6,58 +6,22 @@
 #include "ExWorldTestCharacter.h"
 #include "GameplayTagContainer.h"
 
-UExGameplayAbility::UExGameplayAbility(){}
-
-FExGameplayEffectContainerSpec UExGameplayAbility::MakeEffectContainerSpecFromContainer(const FExGameplayEffectContainer& Container, const FGameplayEventData& EventData, int32 OverrideGameplayLevel)
+UExGameplayAbility::UExGameplayAbility()
 {
-	// First figure out our actor info
-	FExGameplayEffectContainerSpec ReturnSpec;
-	AActor* OwningActor = GetOwningActorFromActorInfo();
-	AExWorldTestCharacter* OwningCharacter = Cast<AExWorldTestCharacter>(OwningActor);
-	UExAbilitySystemComponent* OwningASC = UExAbilitySystemComponent::GetAbilitySystemComponentFromActor(OwningActor);
+	// Default to Instance Per Actor
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 
-	if (OwningASC)
-	{
-		// If we don't have an override level, use the default on the ability itself
-		if (OverrideGameplayLevel == INDEX_NONE)
-		{
-			OverrideGameplayLevel = OverrideGameplayLevel = this->GetAbilityLevel(); //OwningASC->GetDefaultAbilityLevel();
-		}
-
-		// Build GameplayEffectSpecs for each applied effect
-		for (const TSubclassOf<UGameplayEffect>& EffectClass : Container.TargetGameplayEffectClasses)
-		{
-			ReturnSpec.TargetGameplayEffectSpecs.Add(MakeOutgoingGameplayEffectSpec(EffectClass, OverrideGameplayLevel));
-		}
-	}
-	return ReturnSpec;
+	// Default tags that block this ability from activating
+	ActivationBlockedTags.AddTag(FGameplayTag::RequestGameplayTag(FName("State.Dead")));
+	ActivationBlockedTags.AddTag(FGameplayTag::RequestGameplayTag(FName("State.Debuff.Stun")));
 }
 
-FExGameplayEffectContainerSpec UExGameplayAbility::MakeEffectContainerSpec(FGameplayTag ContainerTag, const FGameplayEventData& EventData, int32 OverrideGameplayLevel)
+void UExGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
-	FExGameplayEffectContainer* FoundContainer = EffectContainerMap.Find(ContainerTag);
+	Super::OnAvatarSet(ActorInfo, Spec);
 
-	if (FoundContainer)
+	if (ActivateAbilityOnGranted)
 	{
-		return MakeEffectContainerSpecFromContainer(*FoundContainer, EventData, OverrideGameplayLevel);
+		bool ActivatedAbility = ActorInfo->AbilitySystemComponent->TryActivateAbility(Spec.Handle, false);
 	}
-	return FExGameplayEffectContainerSpec();
-}
-
-TArray<FActiveGameplayEffectHandle> UExGameplayAbility::ApplyEffectContainerSpec(const FExGameplayEffectContainerSpec& ContainerSpec)
-{
-	TArray<FActiveGameplayEffectHandle> AllEffects;
-
-	// Iterate list of effect specs and apply them to their target data
-	for (const FGameplayEffectSpecHandle& SpecHandle : ContainerSpec.TargetGameplayEffectSpecs)
-	{
-		AllEffects.Append(K2_ApplyGameplayEffectSpecToTarget(SpecHandle, ContainerSpec.TargetData));
-	}
-	return AllEffects;
-}
-
-TArray<FActiveGameplayEffectHandle> UExGameplayAbility::ApplyEffectContainer(FGameplayTag ContainerTag, const FGameplayEventData& EventData, int32 OverrideGameplayLevel)
-{
-	FExGameplayEffectContainerSpec Spec = MakeEffectContainerSpec(ContainerTag, EventData, OverrideGameplayLevel);
-	return ApplyEffectContainerSpec(Spec);
 }

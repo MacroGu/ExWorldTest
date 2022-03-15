@@ -7,36 +7,17 @@
 #include "ExAbilityTypes.h"
 #include "ExGameplayAbility.generated.h"
 
+
 UENUM(BlueprintType)
 enum class EAbilityInputID : uint8
 {
+	// 0 None
 	None			UMETA(DisplayName = "None"),
-	Jump			UMETA(DisplayName = "Jump"),
+	// 1 G			
 	Spell			UMETA(DisplayName = "Spell"),
+	// 2 Jump
+	Jump			UMETA(DisplayName = "Jump")
 };
-
-USTRUCT(BlueprintType)
-struct FAbilityBindInfo
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, Category = BindInfo)
-	EAbilityInputID Command;
-
-	UPROPERTY(EditAnywhere, Category = BindInfo)
-	TSubclassOf<UExGameplayAbility> GameplayAbilityClass;
-
-};
-
-USTRUCT(BlueprintType)
-struct FArrayOfAbilityBindInfo
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere)
-	TArray<FAbilityBindInfo> ArrayOfAbilityBindInfo;
-};
-
 
 /**
  * 
@@ -50,24 +31,21 @@ public:
 	// Constructor and overrides
 	UExGameplayAbility();
 
-	/** Map of gameplay tags to gameplay effect containers */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = GameplayEffects)
-	TMap<FGameplayTag, FExGameplayEffectContainer> EffectContainerMap;
+	// Abilities with this set will automatically activate when the input is pressed
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Ability")
+	EAbilityInputID AbilityInputID = EAbilityInputID::None;
 
-	/** Make gameplay effect container spec to be applied later, using the passed in container */
-	UFUNCTION(BlueprintCallable, Category = Ability, meta = (AutoCreateRefTerm = "EventData"))
-	virtual FExGameplayEffectContainerSpec MakeEffectContainerSpecFromContainer(const FExGameplayEffectContainer& Container, const FGameplayEventData& EventData, int32 OverrideGameplayLevel = -1);
+	// Value to associate an ability with an slot without tying it to an automatically activated input.
+	// Passive abilities won't be tied to an input so we need a way to generically associate abilities with slots.
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Ability")
+	EAbilityInputID AbilityID = EAbilityInputID::None;
 
-	/** Search for and make a gameplay effect container spec to be applied later, from the EffectContainerMap */
-	UFUNCTION(BlueprintCallable, Category = Ability, meta = (AutoCreateRefTerm = "EventData"))
-	virtual FExGameplayEffectContainerSpec MakeEffectContainerSpec(FGameplayTag ContainerTag, const FGameplayEventData& EventData, int32 OverrideGameplayLevel = -1);
+	// Tells an ability to activate immediately when its granted. Used for passive abilities and abilities forced on others.
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Ability")
+	bool ActivateAbilityOnGranted = false;
 
-	/** Applies a gameplay effect container spec that was previously created */
-	UFUNCTION(BlueprintCallable, Category = Ability)
-	virtual TArray<FActiveGameplayEffectHandle> ApplyEffectContainerSpec(const FExGameplayEffectContainerSpec& ContainerSpec);
-
-	/** Applies a gameplay effect container, by creating and then applying the spec */
-	UFUNCTION(BlueprintCallable, Category = Ability, meta = (AutoCreateRefTerm = "EventData"))
-	virtual TArray<FActiveGameplayEffectHandle> ApplyEffectContainer(FGameplayTag ContainerTag, const FGameplayEventData& EventData, int32 OverrideGameplayLevel = -1);
+	// If an ability is marked as 'ActivateAbilityOnGranted', activate them immediately when given here
+	// Epic's comment: Projects may want to initiate passives or do other "BeginPlay" type of logic here.
+	virtual void OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 
 };

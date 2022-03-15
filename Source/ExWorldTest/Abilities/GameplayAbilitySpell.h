@@ -6,6 +6,8 @@
 #include "GameplayAbilitySpell.generated.h"
 
 
+class AExProjectile;
+
 /**
  *	Ability that Spell.
  */
@@ -17,31 +19,34 @@ class EXWORLDTEST_API UGameplayAbilitySpell : public UExGameplayAbility
 
 public:
 
-	UGameplayAbilitySpell(const FObjectInitializer& ObjectInitializer);
+	UGameplayAbilitySpell();
 
-	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
-
-	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* OwnerInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
-
-	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
-		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
-
-	virtual void CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
-
-
-
-public:
-
-	UFUNCTION()
-	void MontagePlayEnd(FGameplayTag EventTag, FGameplayEventData EventData);
-
-	UFUNCTION()
-	void MontagePlayEventReceived(FGameplayTag EventTag, FGameplayEventData EventData);
-
-
-public:
-
-	UPROPERTY(EditDefaultsOnly, Category = Skills)
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	UAnimMontage* SpellMontage;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	TSubclassOf<AExProjectile> ProjectileClass;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	TSubclassOf<UGameplayEffect> DamageGameplayEffect;
+
+	/** Actually activate ability, do not call this directly. We'll call it from APAHeroCharacter::ActivateAbilitiesWithTags(). */
+	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+
+protected:
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+		float Range;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+		float Damage;
+
+	UFUNCTION()
+		void OnCancelled(FGameplayTag EventTag, FGameplayEventData EventData);
+
+	UFUNCTION()
+		void OnCompleted(FGameplayTag EventTag, FGameplayEventData EventData);
+
+	UFUNCTION()
+		void EventReceived(FGameplayTag EventTag, FGameplayEventData EventData);
 
 };
