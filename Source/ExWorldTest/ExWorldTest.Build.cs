@@ -19,19 +19,32 @@ public class ExWorldTest : ModuleRules
 				"Engine", 
 				"InputCore", 
 				"HeadMountedDisplay", 
-				"GameplayAbilities", 
-				"GameplayTags",	
-				"GameplayTasks",
 				"AIModule"
 			});
+
+		PrivateDependencyModuleNames.AddRange(new string[] {
+			"Slate",
+			"SlateCore",
+			"GameplayAbilities",
+			"GameplayTags",
+			"UMG",
+			"GameplayTasks"
+		});
 
 		AddIncludePath(ModuleDirectory);
 
 		AddIncludePath(Path.Combine(Path.GetFullPath(Target.RelativeEnginePath), "Source", "Editor", "Blutility", "Private"));
 
+		if (Target.Configuration != UnrealTargetConfiguration.Shipping)
+		{
+			OptimizeCode = CodeOptimization.Never;
+		}
+
 	}
 
-	private void AddIncludePath(string include_path)
+
+
+private void AddIncludePath(string include_path)
 	{
 		if (!Directory.Exists(include_path))
 		{

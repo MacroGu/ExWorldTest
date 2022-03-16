@@ -9,6 +9,7 @@
 #include "ExWorldTestCharacter.generated.h"
 
 
+class UExCharacterStatusBarWidget;
 
 UCLASS(config=Game)
 class AExWorldTestCharacter : public ACharacter, public IAbilitySystemInterface
@@ -33,6 +34,8 @@ public:
 	// Implement IAbilitySystemInterface
 	UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
+	UExCharacterStatusBarWidget* GetExPlayerStatusBar() { return UIExCharacterStatusBarWidget; }
+
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
@@ -40,6 +43,11 @@ public:
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
+
+	bool ASCInputBound = false;
+
+	FGameplayTag DeadTag;
+
 
 protected:
 
@@ -67,6 +75,26 @@ protected:
 	/** Handler for when a touch input stops. */
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
 
+	UFUNCTION()
+	void InitializeCharacterStatusBar();
+
+	// Client only
+	virtual void OnRep_PlayerState() override;
+
+	void BindASCInput();
+
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "ExWorld|ExWorldTestCharacter|Attributes")
+	float GetHealth() const;
+
+	UFUNCTION(BlueprintCallable, Category = "ExWorld|ExWorldTestCharacter|Attributes")
+	float GetMaxHealth() const;
+
+	UFUNCTION(BlueprintCallable, Category = "ExWorld|ExWorldTestCharacter|Attributes")
+	virtual void SetHealth(float Health);
+
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -75,12 +103,27 @@ protected:
 protected:
 
 	// Default abilities for this Character. These will be removed on Character death and regiven if Character respawns.
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "ExWorld|Abilities")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "ExWorldTest|Abilities")
 	TArray<TSubclassOf<class UExGameplayAbility>> CharacterAbilities;
 
-	UExAbilitySystemComponent* AbilitySystemComponent;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "ExWorldTest|Abilities")
+	TSubclassOf<class UGameplayEffect> DefaultAttributes;
+
+	TWeakObjectPtr<class UExAbilitySystemComponent> AbilitySystemComponent;
+	TWeakObjectPtr<class UExAttributeSetBase> AttributeSetBase;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "ExWorld|UI")
+	TSubclassOf<UExCharacterStatusBarWidget> UIExCharacterStatusBarClass;
+
+	UPROPERTY()
+	UExCharacterStatusBarWidget* UIExCharacterStatusBarWidget;
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ExWorld|UI")
+	class UWidgetComponent* UIExCharacterStatusBarComponent;
+
 
 	virtual void AddCharacterAbilities();
+	void InitializeAttributes();
 
 
 public:

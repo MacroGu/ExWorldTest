@@ -36,10 +36,7 @@ void UGameplayAbilitySpell::ActivateAbility(const FGameplayAbilitySpecHandle Han
 		return;
 	}
 
-
-	// UExAbilityTask_PlayMontageAndWaitForEvent* Task = UExAbilityTask_PlayMontageAndWaitForEvent::PlayMontageAndWaitForEvent(this, FName(TEXT("None")), SpellMontage, AbilityTags);
 	UExAbilityTask_PlayMontageAndWaitForEvent* Task = UExAbilityTask_PlayMontageAndWaitForEvent::PlayMontageAndWaitForEvent(this, NAME_None, SpellMontage, FGameplayTagContainer(), 1.0f, NAME_None, false, 1.0f);
-
 
 	Task->OnBlendOut.AddDynamic(this, &UGameplayAbilitySpell::OnCompleted);
 	Task->OnCompleted.AddDynamic(this, &UGameplayAbilitySpell::OnCompleted);
@@ -81,20 +78,7 @@ void UGameplayAbilitySpell::EventReceived(FGameplayTag EventTag, FGameplayEventD
 		return;
 	}
 
-	FVector Start = Hero->GetMesh()->GetSocketLocation(FName("spine_03"));
-	FVector End = Hero->GetCameraBoom()->GetComponentLocation() + Hero->GetFollowCamera()->GetForwardVector() * Range;
-	FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(Start, End);
-
-	FTransform SpineTransform = Hero->GetMesh()->GetSocketTransform(FName("spine_03"));
-	SpineTransform.SetRotation(Rotation.Quaternion());
-	SpineTransform.SetScale3D(FVector(1.0f));
-
-	FActorSpawnParameters SpawnParameters;
-	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	AExProjectile* Projectile = GetWorld()->SpawnActorDeferred<AExProjectile>(ProjectileClass, SpineTransform, GetOwningActorFromActorInfo(),
-		Hero, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+	AExProjectile* Projectile = GetWorld()->SpawnActor<AExProjectile>(ProjectileClass, Hero->GetActorLocation(), Hero->GetActorRotation());
 	Projectile->Range = Range;
-	Projectile->FinishSpawning(SpineTransform);
 
 }

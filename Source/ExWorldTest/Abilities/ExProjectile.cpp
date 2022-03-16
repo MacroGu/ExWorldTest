@@ -3,6 +3,7 @@
 
 #include "ExProjectile.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Components/SphereComponent.h"
 
 // Sets default values
 AExProjectile::AExProjectile()
@@ -13,6 +14,20 @@ AExProjectile::AExProjectile()
 	bReplicates = true;
 
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(FName("ProjectileMovement"));
+
+	SceneRoot = CreateDefaultSubobject<USceneComponent>("SceneRoot");
+	RootComponent = SceneRoot;
+
+	Collision = CreateDefaultSubobject<USphereComponent>(TEXT("Collision"), true);
+	Collision->SetCollisionProfileName(FName("Collision"));
+	Collision->AttachTo(RootComponent);
+	Collision->OnComponentBeginOverlap.AddDynamic(this, &AExProjectile::OnOverlapBegin);
+
+
+	Sphere = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sphere"));
+	Sphere->SetCollisionProfileName(FName("Sphere"));
+	Sphere->AttachTo(Collision);
+
 }
 
 // Called when the game starts or when spawned
@@ -22,3 +37,23 @@ void AExProjectile::BeginPlay()
 	
 }
 
+void AExProjectile::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	AActor* Owner2 = GetOwner();
+	if (this == OtherActor)
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("AExProjectile::OnOverlapBegin"));
+}
+
+void AExProjectile::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (GetOwner() == OtherActor)
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("AExProjectile::OnOverlapEnd"));
+}
