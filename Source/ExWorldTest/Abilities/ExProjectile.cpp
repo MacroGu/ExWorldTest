@@ -4,6 +4,7 @@
 #include "ExProjectile.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
+#include "ExWorldTestCharacter.h"
 
 // Sets default values
 AExProjectile::AExProjectile()
@@ -39,11 +40,21 @@ void AExProjectile::BeginPlay()
 
 void AExProjectile::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	AActor* Owner2 = GetOwner();
-	if (this == OtherActor)
+	AActor* tempActor = GetOwner();
+	if (tempActor == OtherActor || OtherActor == this)
 	{
 		return;
 	}
+
+
+//	AbilityComp->ApplyModToAttributeUnsafe(AffectedAttributeProperty, EGameplayModOp::Additive, NewDelta);
+	AExWorldTestCharacter* AttackedActor = Cast<AExWorldTestCharacter>(OtherActor);
+	if (IsValid(AttackedActor))
+	{
+		AttackedActor->ChangeHealth(-5);
+	}
+
+
 
 	UE_LOG(LogTemp, Warning, TEXT("AExProjectile::OnOverlapBegin"));
 }
@@ -55,5 +66,5 @@ void AExProjectile::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Ot
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("AExProjectile::OnOverlapEnd"));
+	// UE_LOG(LogTemp, Warning, TEXT("AExProjectile::OnOverlapEnd"));
 }

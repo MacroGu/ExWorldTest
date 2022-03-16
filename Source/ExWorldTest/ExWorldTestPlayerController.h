@@ -34,6 +34,9 @@ public:
 	void SetRespawnCountdown_Implementation(float RespawnTimeRemaining);
 	bool SetRespawnCountdown_Validate(float RespawnTimeRemaining);
 
+
+
+
 protected:
 	
 	// Server only

@@ -27,7 +27,7 @@ public:
 
 	FReceivedDamageDelegate ReceivedDamage;
 
-	// Called from GDDamageExecCalculation. Broadcasts on ReceivedDamage whenever this ASC receives damage.
+	// Called from ExDamageExecCalculation. Broadcasts on ReceivedDamage whenever this ASC receives damage.
 	virtual void ReceiveDamage(UExAbilitySystemComponent* SourceASC, float UnmitigatedDamage, float MitigatedDamage);
 
 

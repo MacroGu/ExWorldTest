@@ -84,7 +84,6 @@ void AExWorldTestCharacter::PossessedBy(AController* NewController)
 	PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, this);
 
 	AttributeSetBase = PS->GetAttributeSetBase();
-	SetHealth(GetMaxHealth());
 
 	InitializeAttributes();
 	InitializeCharacterStatusBar();
@@ -186,6 +185,7 @@ void AExWorldTestCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 	PlayerInputComponent->BindTouch(IE_Pressed, this, &AExWorldTestCharacter::TouchStarted);
 	PlayerInputComponent->BindTouch(IE_Released, this, &AExWorldTestCharacter::TouchStopped);
 
+	BindASCInput();
 }
 
 void AExWorldTestCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
@@ -208,6 +208,23 @@ void AExWorldTestCharacter::LookUpAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+}
+
+
+void AExWorldTestCharacter::ChangeHealth_Implementation(float NewValue)
+{
+	if (!AttributeSetBase.IsValid() || !AbilitySystemComponent.IsValid())
+	{
+		return;
+	}
+
+	AbilitySystemComponent->ApplyModToAttributeUnsafe(AttributeSetBase->GetHealthAttribute(), EGameplayModOp::Additive, NewValue);
+
+}
+
+bool AExWorldTestCharacter::ChangeHealth_Validate(float NewValue)
+{
+	return true;
 }
 
 void AExWorldTestCharacter::MoveForward(float Value)
@@ -290,7 +307,7 @@ void AExWorldTestCharacter::OnRep_PlayerState()
 
 	AttributeSetBase = PS->GetAttributeSetBase();
 
-	InitializeAttributes();
+	// InitializeAttributes();
 
 	InitializeCharacterStatusBar();
 

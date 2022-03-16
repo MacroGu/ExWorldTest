@@ -49,6 +49,16 @@ public:
 	FGameplayTag DeadTag;
 
 
+
+public:
+	// rpcs 
+	// change health 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ChangeHealth(float NewValue);
+	void ChangeHealth_Implementation(float NewValue);
+	bool ChangeHealth_Validate(float NewValue);
+
+
 protected:
 
 	/** Called for forwards/backward input */

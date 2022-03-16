@@ -78,7 +78,15 @@ void UGameplayAbilitySpell::EventReceived(FGameplayTag EventTag, FGameplayEventD
 		return;
 	}
 
-	AExProjectile* Projectile = GetWorld()->SpawnActor<AExProjectile>(ProjectileClass, Hero->GetActorLocation(), Hero->GetActorRotation());
-	Projectile->Range = Range;
+	FActorSpawnParameters params;
+	params.Owner = Hero;
+	params.Instigator = Hero;
+	params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
+	FTransform BulletSpawnTransform;
+	BulletSpawnTransform.SetLocation(Hero->GetActorLocation());
+	BulletSpawnTransform.SetRotation(Hero->GetActorRotation().Quaternion());
+
+	AExProjectile* Projectile = GetWorld()->SpawnActor<AExProjectile>(ProjectileClass, BulletSpawnTransform, params);
+	Projectile->Range = Range;
 }
