@@ -7,20 +7,9 @@
 #include "UI/ExShowTextWidgetComponent.h"
 
 
-void AExWorldTestPlayerController::ShowDamageNumber_Implementation(float DamageAmount, AExWorldTestCharacter* TargetCharacter)
-{
-	if (TargetCharacter)
-	{
-		UExShowTextWidgetComponent* DamageText = NewObject<UExShowTextWidgetComponent>(TargetCharacter, DamageNumberClass);
-		DamageText->RegisterComponent();
-		DamageText->AttachToComponent(TargetCharacter->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-		// DamageText->SetDamageText(DamageAmount);
-	}
-}
 
-bool AExWorldTestPlayerController::ShowDamageNumber_Validate(float DamageAmount, AExWorldTestCharacter* TargetCharacter)
+AExWorldTestPlayerController::AExWorldTestPlayerController()
 {
-	return true;
 }
 
 void AExWorldTestPlayerController::SetRespawnCountdown_Implementation(float RespawnTimeRemaining)

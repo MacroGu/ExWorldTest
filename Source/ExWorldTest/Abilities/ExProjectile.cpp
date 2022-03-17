@@ -5,6 +5,10 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "ExWorldTestCharacter.h"
+#include "Kismet/GameplayStatics.h"
+
+
+
 
 // Sets default values
 AExProjectile::AExProjectile()
@@ -36,6 +40,14 @@ void AExProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	AExWorldTestPlayerController* PC = Cast<AExWorldTestPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (!IsValid(PC))
+	{
+		return;
+	}
+
+	ApplyEffectToActor.AddDynamic(this, &AExProjectile::OnApplyEffect);
+
 }
 
 void AExProjectile::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -48,15 +60,17 @@ void AExProjectile::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* 
 
 
 //	AbilityComp->ApplyModToAttributeUnsafe(AffectedAttributeProperty, EGameplayModOp::Additive, NewDelta);
-	AExWorldTestCharacter* AttackedActor = Cast<AExWorldTestCharacter>(OtherActor);
-	if (IsValid(AttackedActor))
-	{
-		AttackedActor->ChangeHealth(-5);
-	}
-
-
+	//AExWorldTestCharacter* AttackedActor = Cast<AExWorldTestCharacter>(OtherActor);
+	//if (IsValid(AttackedActor))
+	//{
+	//	AttackedActor->ChangeHealth(-5);
+	//}
+	FEffectData Data;
+	ApplyEffectToActor.Broadcast(OtherActor, Data);
 
 	UE_LOG(LogTemp, Warning, TEXT("AExProjectile::OnOverlapBegin"));
+
+
 }
 
 void AExProjectile::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)

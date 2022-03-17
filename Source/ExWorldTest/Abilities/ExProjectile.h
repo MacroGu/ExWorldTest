@@ -3,9 +3,40 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/DataTable.h"
 #include "GameFramework/Actor.h"
 #include "GameplayEffect.h"
+#include "ExWorldTestPlayerController.h"
 #include "ExProjectile.generated.h"
+
+
+USTRUCT(BlueprintType, meta = (DisplayName = "Configure Data Affect"))
+struct EXWORLDTEST_API FAffectDataTable : public  FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data")
+	FString AffectType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data")
+	int32 HpChange;
+
+};
+
+USTRUCT(BlueprintType)
+struct FEffectData
+{
+	GENERATED_BODY()
+
+		UPROPERTY()
+		FString Type;
+
+};
+
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FApplyEffectToActor, class AActor*, TargetActor, const FEffectData&, Data);
+
+
 
 UCLASS()
 class EXWORLDTEST_API AExProjectile : public AActor
@@ -33,6 +64,18 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	USceneComponent* SceneRoot;
+
+
+public:
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnApplyEffect(AActor* AffectedActor, const FEffectData& EffectData);
+
+
+	UPROPERTY(BlueprintAssignable)
+	FApplyEffectToActor ApplyEffectToActor;
+
+
 
 public:
 

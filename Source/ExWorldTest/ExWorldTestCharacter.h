@@ -48,16 +48,23 @@ public:
 
 	FGameplayTag DeadTag;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString AffectType;
 
 
 public:
 	// rpcs 
 	// change health 
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable, WithValidation, BlueprintCallable)
 	void ChangeHealth(float NewValue);
 	void ChangeHealth_Implementation(float NewValue);
 	bool ChangeHealth_Validate(float NewValue);
 
+
+
+	/** called when something enters the sphere component */
+	UFUNCTION()
+	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 protected:
 
@@ -131,6 +138,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ExWorld|UI")
 	class UWidgetComponent* UIExCharacterStatusBarComponent;
 
+	UPROPERTY(EditAnywhere)
+	class USphereComponent* Collision;
 
 	virtual void AddCharacterAbilities();
 	void InitializeAttributes();
