@@ -65,6 +65,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	USceneComponent* SceneRoot;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
 
@@ -76,6 +77,16 @@ public:
 	FApplyEffectToActor ApplyEffectToActor;
 
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIfDestroyAfterAffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 NumsOfAffectActor;
+
+	UPROPERTY(ReplicatedUsing = OnRep_AlreadyAffectedNumsOfActors)
+	int32 AlreadyAffectedNumsOfActors;
+	UFUNCTION()
+	void OnRep_AlreadyAffectedNumsOfActors();
 
 public:
 
@@ -91,6 +102,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	TArray<AActor*> AffectedActors;
 
 
 

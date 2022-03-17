@@ -6,6 +6,7 @@
 #include "Components/SphereComponent.h"
 #include "ExWorldTestCharacter.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 
 
@@ -14,7 +15,7 @@
 AExProjectile::AExProjectile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	bReplicates = true;
 
@@ -58,18 +59,21 @@ void AExProjectile::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* 
 		return;
 	}
 
+	AffectedActors.Add(OtherActor);
+	if (GetLocalRole() != ROLE_Authority)
+	{
+		return;
+	}
 
-//	AbilityComp->ApplyModToAttributeUnsafe(AffectedAttributeProperty, EGameplayModOp::Additive, NewDelta);
-	//AExWorldTestCharacter* AttackedActor = Cast<AExWorldTestCharacter>(OtherActor);
-	//if (IsValid(AttackedActor))
-	//{
-	//	AttackedActor->ChangeHealth(-5);
-	//}
+	if (AlreadyAffectedNumsOfActors >= NumsOfAffectActor)
+	{
+		return;
+	}
+
 	FEffectData Data;
 	ApplyEffectToActor.Broadcast(OtherActor, Data);
-
-	UE_LOG(LogTemp, Warning, TEXT("AExProjectile::OnOverlapBegin"));
-
+	AlreadyAffectedNumsOfActors++;
+	UE_LOG(LogTemp, Warning, TEXT("AExProjectile::OnOverlapEnd, %d"), AlreadyAffectedNumsOfActors);
 
 }
 
@@ -81,4 +85,19 @@ void AExProjectile::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	}
 
 	// UE_LOG(LogTemp, Warning, TEXT("AExProjectile::OnOverlapEnd"));
+
+}
+
+
+void AExProjectile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AExProjectile, AlreadyAffectedNumsOfActors);
+}
+
+
+void AExProjectile::OnRep_AlreadyAffectedNumsOfActors()
+{
+
 }
