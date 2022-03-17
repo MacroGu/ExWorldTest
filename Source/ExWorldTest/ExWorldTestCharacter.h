@@ -51,6 +51,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString AffectType;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 CoolDownTimeForSpellSkill;
+
 
 public:
 	// rpcs 
@@ -103,6 +106,10 @@ public:
 	float GetMaxHealth() const;
 
 	UFUNCTION(BlueprintCallable, Category = "ExWorld|ExWorldTestCharacter|Attributes")
+	float GetLastSpellTime() const;
+
+
+	UFUNCTION(BlueprintCallable, Category = "ExWorld|ExWorldTestCharacter|Attributes")
 	virtual void SetHealth(float Health);
 
 
@@ -135,6 +142,25 @@ protected:
 
 	virtual void AddCharacterAbilities();
 	void InitializeAttributes();
+
+
+
+	UFUNCTION(Server, Reliable, WithValidation, BlueprintCallable)
+	void ReqSpellAbility();
+	void ReqSpellAbility_Implementation();
+	bool ReqSpellAbility_Validate();
+
+	UFUNCTION(Client, Reliable, BlueprintCallable)
+	void ResSpellAbility();
+
+	UFUNCTION()
+	void SpellWithCheck();
+
+
+	UPROPERTY(ReplicatedUsing = OnRep_LastSpellTime)
+	int64 LastSpellTime;
+	UFUNCTION()
+	void OnRep_LastSpellTime();
 
 
 public:

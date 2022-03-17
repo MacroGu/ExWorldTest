@@ -9,7 +9,7 @@
 
 
 
-
+class UExTimeLimitationShow;
 
 /**
  * 
@@ -23,18 +23,11 @@ public:
 
 	AExWorldTestPlayerController();
 
-	// Simple way to RPC to the client the countdown until they respawn from the GameMode. Will be latency amount of out sync with the Server.
-	UFUNCTION(Client, Reliable, WithValidation)
-	void SetRespawnCountdown(float RespawnTimeRemaining);
-	void SetRespawnCountdown_Implementation(float RespawnTimeRemaining);
-	bool SetRespawnCountdown_Validate(float RespawnTimeRemaining);
+	UPROPERTY(EditAnywhere, Category = "ExWorldTest|UI")
+	TSubclassOf<UExTimeLimitationShow> TimeLimitationClass;
 
 
-public:
-	
-
-
-
+	void ShowTimeLimitation(const int64 TimeLeft);
 
 
 protected:
@@ -44,5 +37,7 @@ protected:
 
 	virtual void OnRep_PlayerState() override;
 
+	UPROPERTY(BlueprintReadWrite, Category = "GASDocumentation|UI")
+	UExTimeLimitationShow* UITimeLimitation;
 
 };

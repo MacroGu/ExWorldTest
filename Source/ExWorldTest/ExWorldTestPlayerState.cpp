@@ -1,7 +1,6 @@
 #include "ExWorldTestPlayerState.h"
 
 #include "Abilities/AttributeSets/ExAttributeSetBase.h"
-#include "UI/ExShowTextWidgetComponent.h"
 #include "ExWorldTestCharacter.h"
 #include "ExWorldTestPlayerController.h"
 #include "UI/ExCharacterStatusBarWidget.h"

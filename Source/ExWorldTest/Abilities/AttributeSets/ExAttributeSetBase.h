@@ -44,6 +44,10 @@ public:
 	ATTRIBUTE_ACCESSORS(UExAttributeSetBase, MaxHealth)
 
 
+	UPROPERTY(BlueprintReadOnly, Category = "Limitation", ReplicatedUsing = OnRep_LastSpellTime)
+	FGameplayAttributeData LastSpellTime;
+	ATTRIBUTE_ACCESSORS(UExAttributeSetBase, LastSpellTime)
+
 protected:
 
 	/**
@@ -56,4 +60,6 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth);
 
+	UFUNCTION()
+	virtual void OnRep_LastSpellTime(const FGameplayAttributeData& OldLastSpellTime);
 };

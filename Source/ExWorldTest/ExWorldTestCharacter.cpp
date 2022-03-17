@@ -12,6 +12,7 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 
 #include "UI/ExCharacterStatusBarWidget.h"
@@ -20,6 +21,7 @@
 #include "ExWorldTestGameMode.h"
 #include "ExWorldTestPlayerState.h"
 #include "Abilities/ExProjectile.h"
+
 
 
 
@@ -71,9 +73,10 @@ AExWorldTestCharacter::AExWorldTestCharacter()
 	AffectType = "pawn";
 
 	DeadTag = FGameplayTag::RequestGameplayTag(FName("State.Dead"));
-
+	CoolDownTimeForSpellSkill = 10;
 
 }
+
 
 void AExWorldTestCharacter::PossessedBy(AController* NewController)
 {
@@ -138,6 +141,12 @@ void AExWorldTestCharacter::InitializeAttributes()
 
 }
 
+void AExWorldTestCharacter::OnRep_LastSpellTime()
+{
+
+}
+
+
 void AExWorldTestCharacter::UnPossessed()
 {
 
@@ -158,6 +167,8 @@ void AExWorldTestCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(AExWorldTestCharacter, LastSpellTime);
+
 }
 
 UAbilitySystemComponent* AExWorldTestCharacter::GetAbilitySystemComponent() const
@@ -174,6 +185,7 @@ void AExWorldTestCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction("SpellWithCheck", IE_Pressed, this, &AExWorldTestCharacter::SpellWithCheck);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AExWorldTestCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AExWorldTestCharacter::MoveRight);
@@ -230,6 +242,62 @@ void AExWorldTestCharacter::ChangeHealth_Implementation(float NewValue)
 bool AExWorldTestCharacter::ChangeHealth_Validate(float NewValue)
 {
 	return true;
+}
+
+void AExWorldTestCharacter::ReqSpellAbility_Implementation()
+{
+	if (!AttributeSetBase.IsValid() || !AbilitySystemComponent.IsValid())
+	{
+		return;
+	}
+
+	int64 CurrentTime = FDateTime::Now().ToUnixTimestamp();
+	if (CurrentTime - LastSpellTime < CoolDownTimeForSpellSkill)
+	{
+		return;
+	}
+
+	LastSpellTime = CurrentTime;
+	ResSpellAbility();
+
+}
+
+bool AExWorldTestCharacter::ReqSpellAbility_Validate()
+{
+	return true;
+}
+
+void AExWorldTestCharacter::ResSpellAbility_Implementation()
+{
+	if (!AttributeSetBase.IsValid() || !AbilitySystemComponent.IsValid())
+	{
+		return;
+	}
+
+	AbilitySystemComponent->TryActivateAbilityByClass(CharacterAbilities[0], true);
+
+}
+
+void AExWorldTestCharacter::SpellWithCheck()
+{
+	UE_LOG(LogTemp, Warning, TEXT("AExProjectile::OnOverlapEnd, "));
+
+	int64 LeftTime = FDateTime::Now().ToUnixTimestamp() - LastSpellTime;
+	if (LeftTime > CoolDownTimeForSpellSkill)
+	{
+		ReqSpellAbility();
+		return;
+	}
+
+	// show time limitation
+	AExWorldTestPlayerController* PC = Cast<AExWorldTestPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (!IsValid(PC))
+	{
+		return;
+	}
+
+	PC->ShowTimeLimitation(CoolDownTimeForSpellSkill - LeftTime);
+
 }
 
 void AExWorldTestCharacter::MoveForward(float Value)
@@ -353,6 +421,17 @@ float AExWorldTestCharacter::GetMaxHealth() const
 
 	return 0.0f;
 }
+
+float AExWorldTestCharacter::GetLastSpellTime() const
+{
+	if (AttributeSetBase.IsValid())
+	{
+		return AttributeSetBase->GetLastSpellTime();
+	}
+
+	return 0.0f;
+}
+
 
 void AExWorldTestCharacter::SetHealth(float Health)
 {

@@ -26,6 +26,24 @@ UGameplayAbilitySpell::UGameplayAbilitySpell()
 	Damage = 12.0f;
 }
 
+bool UGameplayAbilitySpell::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags , OUT FGameplayTagContainer* OptionalRelevantTags ) const
+{
+
+	if (!Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags))
+	{
+		return false;
+	}
+
+	AExWorldTestCharacter* Hero = Cast<AExWorldTestCharacter>(GetAvatarActorFromActorInfo());
+	if (!Hero)
+	{
+		return false;
+	}
+
+	return true;
+
+}
+
 void UGameplayAbilitySpell::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);

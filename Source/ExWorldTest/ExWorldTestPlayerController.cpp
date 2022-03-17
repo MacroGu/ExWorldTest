@@ -4,7 +4,7 @@
 #include "AbilitySystemComponent.h"
 #include "ExWorldTestPlayerState.h"
 #include "ExWorldTestCharacter.h"
-#include "UI/ExShowTextWidgetComponent.h"
+#include "UI/ExTimeLimitationShow.h"
 
 
 
@@ -12,14 +12,11 @@ AExWorldTestPlayerController::AExWorldTestPlayerController()
 {
 }
 
-void AExWorldTestPlayerController::SetRespawnCountdown_Implementation(float RespawnTimeRemaining)
+void AExWorldTestPlayerController::ShowTimeLimitation(const int64 TimeLeft)
 {
-
-}
-
-bool AExWorldTestPlayerController::SetRespawnCountdown_Validate(float RespawnTimeRemaining)
-{
-	return true;
+	UITimeLimitation = CreateWidget<UExTimeLimitationShow>(this, TimeLimitationClass);
+	UITimeLimitation->AddToViewport();
+	UITimeLimitation->UpdateTImeLeft(TimeLeft);
 }
 
 // Server only

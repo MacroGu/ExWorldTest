@@ -37,6 +37,7 @@ void UExAttributeSetBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 	DOREPLIFETIME_CONDITION_NOTIFY(UExAttributeSetBase, Health, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UExAttributeSetBase, MaxHealth, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UExAttributeSetBase, LastSpellTime, COND_None, REPNOTIFY_Always);
 }
 
 
@@ -48,4 +49,9 @@ void UExAttributeSetBase::OnRep_Health(const FGameplayAttributeData& OldHealth)
 void UExAttributeSetBase::OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UExAttributeSetBase, MaxHealth, OldMaxHealth);
+}
+
+void UExAttributeSetBase::OnRep_LastSpellTime(const FGameplayAttributeData& OldLastSpellTime)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UExAttributeSetBase, LastSpellTime, OldLastSpellTime);
 }
