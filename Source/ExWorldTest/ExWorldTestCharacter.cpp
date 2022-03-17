@@ -69,10 +69,6 @@ AExWorldTestCharacter::AExWorldTestCharacter()
 	}
 
 	AffectType = "pawn";
-	Collision = CreateDefaultSubobject<USphereComponent>(TEXT("Collision"), true);
-	Collision->SetCollisionProfileName(FName("Collision"));
-	Collision->AttachTo(RootComponent);
-	Collision->OnComponentBeginOverlap.AddDynamic(this, &AExWorldTestCharacter::OnOverlapBegin);
 
 	DeadTag = FGameplayTag::RequestGameplayTag(FName("State.Dead"));
 
@@ -274,7 +270,7 @@ void AExWorldTestCharacter::InitializeCharacterStatusBar()
 	}
 
 	// Setup UI for Locally Owned Players only, not AI or the server's copy of the PlayerControllers
-	AExWorldTestPlayerController* PC = Cast<AExWorldTestPlayerController>(GetController());
+	AExWorldTestPlayerController* PC = Cast<AExWorldTestPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	if (!PC || !PC->IsLocalPlayerController())
 	{
 		return;
@@ -364,29 +360,4 @@ void AExWorldTestCharacter::SetHealth(float Health)
 	{
 		AttributeSetBase->SetHealth(Health);
 	}
-}
-
-void AExWorldTestCharacter::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	//AActor* Owner2 = OtherActor->GetOwner();
-	//if (this == Owner2)
-	//{
-	//	return;
-	//}
-
-	AExProjectile* SpellProjectile = Cast<AExProjectile>(OtherActor);
-	if (!IsValid(SpellProjectile))
-	{
-		return;
-	}
-
-	
-	AExWorldTestPlayerController* PC = Cast<AExWorldTestPlayerController>(GetController());
-	if (!IsValid(PC))
-	{
-		return;
-	}
-
-
-
 }
